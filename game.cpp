@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <unordered_set>
 #include <set>
+#include <vector>
+
 using namespace std;
 namespace sr = std::ranges;
 using namespace std::string_literals;
@@ -21,6 +23,67 @@ enum class Player{
     Cyan,
     None,
 };
+
+enum class PieceType{
+    Pawn,
+    Rook,
+    Knight,
+    Bishop,
+    Queen,
+    King,
+    None
+};
+PieceType piece_type(wchar_t c){
+    switch(c){
+        case L'♙':
+        case L'♟':
+            return PieceType::Pawn;
+        case L'♖':
+        case L'♜':
+            return PieceType::Rook;
+        case L'♘':
+        case L'♞':
+            return PieceType::Knight;
+        case L'♗':
+        case L'♝':
+            return PieceType::Bishop;
+        case L'♕':
+        case L'♛':
+            return PieceType::Queen;
+        case L'♔':
+        case L'♚':
+            return PieceType::King;
+        default:
+            return PieceType::None;
+    }
+}
+auto getpotentialmoves(int x, int y, PieceType pt) -> vector<tuple<int,int>>{
+   switch(pt){
+    case PieceType::Pawn:
+        if(y == 1){
+            return {{x, y+1}, {x, y+2}};
+        }
+        else{
+            return {{x, y+1}};
+        }
+    case PieceType::Rook:
+        return {{0, y}, {1,y},{2,y},{3,y},{4,y},{5,y},{6,y},{7,y},{x,0},{x,1},{x,2},{x,3},{x,4},{x,5},{x,6},{x,7}};
+    case PieceType::Knight:
+        return {{x+1, y+2}, {x+2, y+1}, {x+2, y-1}, {x+1, y-2}, {x-1, y-2}, {x-2, y-1}, {x-2, y+1}, {x-1, y+2}};
+    case PieceType::Bishop:
+        return {{x+1, y+1}, {x+2, y+2}, {x+3, y+3}, {x+4, y+4}, {x+5, y+5}, {x+6, y+6}, {x+7, y+7}, {x-1, y-1}, {x-2, y-2}, {x-3, y-3}, {x-4, y-4}, {x-5, y-5}, {x-6, y-6}, {x-7, y-7}, {x+1, y-1}, {x+2, y-2}, {x+3, y-3}, {x+4, y-4}, {x+5, y-5}, {x+6, y-6}, {x+7, y-7}, {x-1, y+1}, {x-2, y+2}, {x-3, y+3}, {x-4, y+4}, {x-5, y+5}, {x-6, y+6}, {x-7, y+7}};
+    case PieceType::Queen:
+        return {{0, y}, {1,y},{2,y},{3,y},{4,y},{5,y},{6,y},{7,y},{x,0},{x,1},{x,2},{x,3},{x,4},{x,5},{x,6},{x,7},{x+1, y+1}, {x+2, y+2}, {x+3, y+3}, {x+4, y+4}, {x+5, y+5}, {x+6, y+6}, {x+7, y+7}, {x-1, y-1}, {x-2, y-2}, {x-3, y-3}, {x-4, y-4}, {x-5, y-5}, {x-6, y-6}, {x-7, y-7}, {x+1, y-1}, {x+2, y-2}, {x+3, y-3}, {x+4, y-4}, {x+5, y-5}, {x+6, y-6}, {x+7, y-7}, {x-1, y+1}, {x-2, y+2}, {x-3, y+3}, {x-4, y+4}, {x-5, y+5}, {x-6, y+6}, {x-7, y+7}};
+    case PieceType::King:
+        return {{x+1, y+1}, {x+1, y}, {x+1, y-1}, {x, y+1}, {x, y-1}, {x-1, y+1}, {x-1, y}, {x-1, y-1}};
+    default:
+        return {};
+    }
+   
+return {};
+}
+
+
 
 class Piece{
     static constexpr array<wchar_t,6> white_pieces{{L'♙',L'♕',L'♔',L'♗',L'♘',L'♖'}};
