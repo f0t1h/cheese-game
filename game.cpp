@@ -13,7 +13,7 @@ using namespace std;
 namespace sr = std::ranges;
 using namespace std::string_literals;
 
-inline constexpr wchar_t empty_space = L' '; //L'\u3000';
+inline constexpr wchar_t space = L' '; //L'\u3000';
 enum class Player{
     White,
     Black,
@@ -30,7 +30,7 @@ class Piece{
     Player owner;
 
     Piece(wchar_t visual) : visual{visual} {
-        if (visual == empty_space){
+        if (visual == space){
             owner = Player::None;
         }
         else if (sr::find(white_pieces, visual) != std::end(white_pieces)){
@@ -44,6 +44,9 @@ class Piece{
     friend wostream &operator<< (wostream &ost, const Piece &p){
         ost << p.visual;
         return ost;
+    }
+    bool operator==(wchar_t c) const{
+        return visual == c;
     }
 };
 
@@ -65,10 +68,10 @@ class ChessGame{
     board{
         {L'♜',L'♞',L'♝',L'♛',L'♚',L'♝',L'♞',L'♜'
         ,L'♟',L'♟',L'♟',L'♟',L'♟',L'♟',L'♟',L'♟'
-        ,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space
-        ,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space
-        ,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space
-        ,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space,empty_space
+        ,space,space,space,space,space,space,space,space
+        ,space,space,space,space,space,space,space,space
+        ,space,space,space,space,space,space,space,space
+        ,space,space,space,space,space,space,space,space
         ,L'♙',L'♙',L'♙',L'♙',L'♙',L'♙',L'♙',L'♙'
         ,L'♖',L'♘',L'♗',L'♕',L'♔',L'♗',L'♘',L'♖'}
     },
@@ -94,7 +97,7 @@ class ChessGame{
         auto &f = get_square(from);
         auto &t = get_square(to);
         t = f;
-        f = empty_space;
+        f = space;
     }
 
     void play(string from, string to){
@@ -105,7 +108,7 @@ class ChessGame{
         }
         auto &t = get_square(to);
         t = f;
-        f = empty_space;
+        f = space;
         switch_players();
     }
 
@@ -119,7 +122,15 @@ class ChessGame{
         return ot;
     }
     bool done() const{
-        return false;
+        int cnt = 0;
+        for (const auto &col : board){
+            for (const auto &piece : col){
+                if( piece == L'♚' || piece == L'♔'){
+                    cnt += 1;
+                }
+            }
+        }
+        return cnt != 2;
     }
 };
 
@@ -141,7 +152,8 @@ int main(){
 
         wcout  << game;
         done = game.done();
-        break;
     }
+    wcout << L"Game Over\n"sv;
     return 0;
 }
+
