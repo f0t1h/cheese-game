@@ -7,21 +7,52 @@
 #include <ostream>
 #include <iostream>
 #include <fcntl.h>
-
+#include <unordered_set>
+#include <set>
 using namespace std;
 namespace sr = std::ranges;
 using namespace std::string_literals;
 
+inline constexpr wchar_t empty_space = L' '; //L'\u3000';
+enum class Player{
+    White,
+    Black,
+    Pink,
+    Cyan,
+    None,
+};
+
+class Piece{
+    static constexpr array<wchar_t,6> white_pieces{{L'♙',L'♕',L'♔',L'♗',L'♘',L'♖'}};
+    static constexpr array<wchar_t,6> black_pieces{{L'♟',L'♜',L'♞',L'♝',L'♛',L'♚'}};
+    wchar_t visual;
+    public:
+    Player owner;
+
+    Piece(wchar_t visual) : visual{visual} {
+        if (visual == empty_space){
+            owner = Player::None;
+        }
+        else if (sr::find(white_pieces, visual) != std::end(white_pieces)){
+            owner = Player::White;
+        }
+        else if (sr::find(black_pieces, visual) != std::end(black_pieces)){
+            owner = Player::Black;
+        }
+
+    }
+    friend wostream &operator<< (wostream &ost, const Piece &p){
+        ost << p.visual;
+        return ost;
+    }
+};
+
 class ChessGame{
-    static constexpr wchar_t empty_space = L' '; //L'\u3000';
-    enum Turn{
-        White,
-        Black
-    } turn;
+    Player turn;
 
     std::array<
         std::array<
-        wchar_t,
+        Piece,
         8>
         ,8
     > board;
@@ -30,7 +61,7 @@ class ChessGame{
     public:
     ChessGame()
     :
-    turn{White},
+    turn{Player::White},
     board{
         {L'♜',L'♞',L'♝',L'♛',L'♚',L'♝',L'♞',L'♜'
         ,L'♟',L'♟',L'♟',L'♟',L'♟',L'♟',L'♟',L'♟'
@@ -50,12 +81,34 @@ class ChessGame{
         return board[8 - pos[1] + '0'][position_index[pos[0]]];
     }
 
+    auto switch_players(){
+        if (turn == Player::White){
+            turn = Player::Black;
+        }
+        else if (turn == Player::Black){
+            turn = Player::White;
+        }
+    }
+
     auto move(string from, string to){
         auto &f = get_square(from);
         auto &t = get_square(to);
         t = f;
         f = empty_space;
     }
+
+    void play(string from, string to){
+        auto &f = get_square(from);
+        if(f.owner != turn){
+            wcout << "Wrong Piece\n";
+            return;
+        }
+        auto &t = get_square(to);
+        t = f;
+        f = empty_space;
+        switch_players();
+    }
+
     friend auto &operator <<(wostream &ot, const ChessGame &game){
         for(const auto&col : game.board){
             for( auto wc : col){
@@ -84,10 +137,11 @@ int main(){
         for(int i =0; i< 9;++i){
             wcout << "\x1b[1A";
         }
-        game.move(from, to);
+        game.play(from, to);
 
         wcout  << game;
         done = game.done();
+        break;
     }
     return 0;
 }
